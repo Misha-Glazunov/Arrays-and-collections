@@ -1,0 +1,35 @@
+stages:
+  - build
+  - test
+  - deploy_staging
+  - deploy_production
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t <docker-image>:<tag> .
+    - docker push <docker-image>:<tag>
+
+test:
+  stage: test
+  script:
+    - echo "Running tests..."
+
+deploy_staging:
+  stage: deploy_staging
+  script:
+    - kubectl apply -f k8s/deployment-staging.yaml
+    - kubectl apply -f k8s/service-staging.yaml
+  environment:
+    name: staging
+
+deploy_production:
+  stage: deploy_production
+  script:
+    - kubectl apply -f k8s/deployment-production.yaml
+    - kubectl apply -f k8s/service-production.yaml
+  environment:
+    name: production
